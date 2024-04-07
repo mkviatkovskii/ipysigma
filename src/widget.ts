@@ -430,6 +430,62 @@ export class SigmaView extends DOMWidgetView {
     const name = this.model.get('name');
     const data = this.model.get('data');
 
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    data.nodes.forEach((node: { attributes: { x: number; y: number } }) => {
+      const x = node.attributes.x;
+      const y = node.attributes.y;
+
+      if (x < minX) {
+        minX = x;
+      }
+      if (x > maxX) {
+        maxX = x;
+      }
+      if (y < minY) {
+        minY = y;
+      }
+      if (y > maxY) {
+        maxY = y;
+      }
+    });
+
+    const axisYPosition = minY - (maxY - minY) * 0.1;
+    const rangeX = maxX - minX;
+    const step = rangeX / 10;
+
+    for (let i = 0; i <= 10; i++) {
+      const x = minX + step * i;
+      const key = `x-axis-label-${i}`;
+
+      data.nodes.push({
+        key,
+        attributes: {
+          label: x.toFixed(2),
+          color: '#000000',
+          x,
+          y: axisYPosition,
+          size: 1,
+          alwaysShowLabel: true,
+          forceLabel: true,
+          hidden: false,
+        },
+      });
+    }
+
+    data.edges.push({
+      source: 'x-axis-label-0',
+      target: 'x-axis-label-10',
+      attributes: {
+        color: '#000000',
+        label: 'Timeline',
+        alwaysShowLabel: true,
+      },
+    });
+
     this.el.style.backgroundColor = backgroundColor;
 
     const graph = buildGraph(data, createRng());
@@ -865,6 +921,16 @@ export class SigmaView extends DOMWidgetView {
 
         nodeDisplayDataRegister[node] = displayData;
 
+        if (data.alwaysShowLabel) {
+          displayData.forceLabel = true;
+          displayData.hidden = false;
+          displayData.zIndex = 1;
+          displayData.label = data.label || node;
+          displayData.hoverLabel = null;
+          displayData.type = 'point';
+          displayData.color = 'black';
+        }
+
         return displayData;
       };
 
@@ -925,6 +991,11 @@ export class SigmaView extends DOMWidgetView {
 
         if (this.selectedEdge) {
           displayData.hidden = edge !== this.selectedEdge;
+        }
+
+        if (data.alwaysShowLabel) {
+          displayData.hidden = false;
+          displayData.curveness = 0;
         }
 
         return displayData;

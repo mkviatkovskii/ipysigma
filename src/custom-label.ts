@@ -16,5 +16,9 @@ export default function drawLabel(
   context.fillStyle = color;
   context.font = `${weight} ${size}px ${font}`;
 
-  context.fillText(data.label, data.x + data.size + 3, data.y + size / 3);
+  if (data.key.includes('x-axis-label')) {
+    context.fillText(data.label, data.x - data.size, data.y - 10);
+  } else {
+    context.fillText(data.label, data.x + data.size + 3, data.y + size / 3);
+  }
 }

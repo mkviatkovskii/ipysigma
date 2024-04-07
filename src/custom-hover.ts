@@ -21,6 +21,10 @@ export default function drawHover(
   data: PartialButFor<NodeDisplayData, 'x' | 'y' | 'size' | 'label' | 'color'>,
   settings: Settings
 ): void {
+  if (data.key.includes('x-axis-label')) {
+    return;
+  }
+
   const size = data.labelSize || settings.labelSize;
   const font = settings.labelFont;
   const weight = settings.labelWeight;
