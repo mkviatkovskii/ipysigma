@@ -434,13 +434,15 @@ export class SigmaView extends DOMWidgetView {
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
+    var minTimeStamp = 0.0;
 
-    data.nodes.forEach((node: { attributes: { x: number; y: number } }) => {
+    data.nodes.forEach((node: { attributes: { x: number; y: number, timestamp: number } }) => {
       const x = node.attributes.x;
       const y = node.attributes.y;
 
       if (x < minX) {
         minX = x;
+        minTimeStamp = node.attributes.timestamp;
       }
       if (x > maxX) {
         maxX = x;
@@ -453,18 +455,20 @@ export class SigmaView extends DOMWidgetView {
       }
     });
 
+    console.log(minTimeStamp);
     const axisYPosition = minY - (maxY - minY) * 0.1;
     const rangeX = maxX - minX;
     const step = rangeX / 10;
 
     for (let i = 0; i <= 10; i++) {
       const x = minX + step * i;
+      const dt = new Date(1000.0 * (minTimeStamp + (x * 86400.0 * 30.0)));
       const key = `x-axis-label-${i}`;
 
       data.nodes.push({
         key,
         attributes: {
-          label: x.toFixed(2),
+          label: dt.toLocaleString('en-us',{month:'short', year:'numeric'}),
           color: '#000000',
           x,
           y: axisYPosition,
@@ -965,7 +969,8 @@ export class SigmaView extends DOMWidgetView {
 
         // Transient state
         if (this.selectedNode && this.focusedNodes) {
-          if (source !== this.selectedNode && target !== this.selectedNode) {
+          // if (source !== this.selectedNode && target !== this.selectedNode) {
+          if (!this.focusedNodes.has(source) || !this.focusedNodes.has(target)) {
             displayData.hidden = true;
           }
         }
@@ -1357,13 +1362,35 @@ export class SigmaView extends DOMWidgetView {
     if (type === 'node') {
       this.selectedEdge = null;
       this.selectedNode = key;
-      const focusedNodes: Set<string> = new Set();
+      const focusedNodes: Set<string> = new Set([this.selectedNode, ]);
+      let inboundNodesToProcess: Set<string> = new Set([this.selectedNode, ]);
+      let outboundNodesToProcess: Set<string> = new Set([this.selectedNode, ]);
 
-      focusedNodes.add(this.selectedNode);
+      while (inboundNodesToProcess.size > 0) {
+        let newNodesToProcess: Set<string> = new Set();
+        for (let node of inboundNodesToProcess) {
+          console.log(node);
+          graph.forEachInNeighbor(node, (inboundNeighbor) => {
+            focusedNodes.add(inboundNeighbor);
+            newNodesToProcess.add(inboundNeighbor)
+          });
+        }
+        inboundNodesToProcess = newNodesToProcess;
+      }
 
-      graph.forEachNeighbor(key, (neighbor) => {
-        focusedNodes.add(neighbor);
-      });
+      while (outboundNodesToProcess.size > 0) {
+        let newNodesToProcess: Set<string> = new Set();
+        for (let node of outboundNodesToProcess) {
+          console.log(node);
+          graph.forEachOutNeighbor(node, (outboundNeighbor) => {
+            focusedNodes.add(outboundNeighbor);
+            newNodesToProcess.add(outboundNeighbor)
+          });
+        }
+        outboundNodesToProcess = newNodesToProcess;
+      }
+
+      console.log(focusedNodes);
 
       this.focusedNodes = focusedNodes;
       this.choices.setChoiceByValue(key);
@@ -1412,16 +1439,28 @@ export class SigmaView extends DOMWidgetView {
     for (let k in attr) {
       let target = info;
 
-      if (vizAttributes.has(k)) target = vizInfo;
-      else if (k.startsWith(IPYSIGMA_KWARG_PREFIX)) target = kwargInfo;
+      if (k == 'svg')
+      {
+          target.push(
+            ` <b>Image</b><img width="200px" height="200px" src="${escapeHtml(attr[k])}"/>`
+          )
+      } else if (k == 'scaffold_id') {
+        target.push(
+            ` <b>Scaffold</b><img width="200px" height="200px" src="${escapeHtml(graph.getNodeAttributes(attr[k])["svg"])}"/>`
+          )
+      }
+      else {
+        if (vizAttributes.has(k)) target = vizInfo;
+        else if (k.startsWith(IPYSIGMA_KWARG_PREFIX)) target = kwargInfo;
 
-      target.push(
-        `<b>${
-          k.startsWith(IPYSIGMA_KWARG_PREFIX)
-            ? k.slice(IPYSIGMA_KWARG_PREFIX.length)
-            : k
-        }</b> ${renderTypedValue(attr[k])}`
-      );
+        target.push(
+          `<b>${
+            k.startsWith(IPYSIGMA_KWARG_PREFIX)
+              ? k.slice(IPYSIGMA_KWARG_PREFIX.length)
+              : k
+          }</b> ${renderTypedValue(attr[k])}`
+        );
+      }
     }
 
     if (kwargInfo.length !== 0)
