@@ -1444,9 +1444,13 @@ export class SigmaView extends DOMWidgetView {
           target.push(
             ` <b>Image</b><img width="200px" height="200px" src="${escapeHtml(attr[k])}"/>`
           )
-      } else if (k == 'scaffold_id') {
+      } else if (k == 'scaffold_svg') {
         target.push(
-            ` <b>Scaffold</b><img width="200px" height="200px" src="${escapeHtml(graph.getNodeAttributes(attr[k])["svg"])}"/>`
+            ` <b>Scaffold</b><img width="200px" height="200px" src="${escapeHtml(attr[k])}"/>`
+          )
+      } else if (k == 'mcs_svg') {
+        target.push(
+            ` <b>MCS</b><img width="200px" height="200px" src="${escapeHtml(attr[k])}"/>`
           )
       }
       else {
