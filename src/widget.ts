@@ -1,7 +1,7 @@
 import {
   DOMWidgetModel,
   DOMWidgetView,
-  ISerializers,
+  ISerializers
 } from '@jupyter-widgets/base';
 
 import Graph from 'graphology';
@@ -43,7 +43,7 @@ import {
   CategorySummary,
   VisualVariableScalesBuilder,
   VisualVariable,
-  VisualVariables,
+  VisualVariables
 } from './visual-variables';
 import {
   renderAsDataURL,
@@ -51,7 +51,7 @@ import {
   saveAsGEXF,
   saveAsJSON,
   saveAsSVG,
-  pictogramToUrl,
+  pictogramToUrl
 } from './utils';
 import { shapeToPicto } from './shapes';
 import {
@@ -63,7 +63,7 @@ import {
   resetLayoutIcon,
   fullscreenEnterIcon,
   fullscreenExitIcon,
-  scatterIcon,
+  scatterIcon
 } from './icons';
 
 import 'choices.js/public/assets/styles/choices.min.css';
@@ -201,12 +201,12 @@ export class SigmaModel extends DOMWidgetModel {
       snapshot: null,
       layout: null,
       clickableEdges: false,
-      visual_variables: {},
+      visual_variables: {}
     };
   }
 
   static serializers: ISerializers = {
-    ...DOMWidgetModel.serializers,
+    ...DOMWidgetModel.serializers
     // Add any extra serializers here
   };
 
@@ -322,7 +322,7 @@ const SPINNER_STATES = ['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷'];
 function createSpinner(): [HTMLElement, () => void] {
   const span = createElement('span', {
     className: 'ipysigma-spinner',
-    innerHTML: SPINNER_STATES[0],
+    innerHTML: SPINNER_STATES[0]
   });
 
   let state = -1;
@@ -468,15 +468,15 @@ export class SigmaView extends DOMWidgetView {
       data.nodes.push({
         key,
         attributes: {
-          label: dt.toLocaleString('en-us',{month:'short', year:'numeric'}),
+          label: dt.toLocaleString('en-us', { month: 'short', year: 'numeric' }),
           color: '#000000',
           x,
           y: axisYPosition,
           size: 1,
           alwaysShowLabel: true,
           forceLabel: true,
-          hidden: false,
-        },
+          hidden: false
+        }
       });
     }
 
@@ -486,8 +486,8 @@ export class SigmaView extends DOMWidgetView {
       attributes: {
         color: '#000000',
         label: 'Timeline',
-        alwaysShowLabel: true,
-      },
+        alwaysShowLabel: true
+      }
     });
 
     this.el.style.backgroundColor = backgroundColor;
@@ -535,7 +535,7 @@ export class SigmaView extends DOMWidgetView {
         const communities = louvain(graph, {
           getEdgeWeight: this.edgeWeightAttribute,
           rng: createRng(),
-          resolution: metricSpec.resolution || 1,
+          resolution: metricSpec.resolution || 1
         });
 
         metricSpec.result = communities;
@@ -629,7 +629,7 @@ export class SigmaView extends DOMWidgetView {
       renderChoiceLimit: 10,
       choices: options,
       itemSelectText: '',
-      position: 'bottom',
+      position: 'bottom'
     });
 
     this.informationDisplayElement = this.el.querySelector(
@@ -701,19 +701,19 @@ export class SigmaView extends DOMWidgetView {
         rectangle: EdgeRectangleProgram,
         line: EdgeLineProgram,
         triangle: EdgeTriangleProgram,
-        curve: EdgeCurveProgram,
+        curve: EdgeCurveProgram
       };
 
       const NodePictogramProgram = createNodePictogramProgram({
         correctCentering: true,
         forcedSvgSize: 384,
-        keepWithinCircle: true,
+        keepWithinCircle: true
       });
 
       const NodeShapeProgram = createNodePictogramProgram({
         correctCentering: true,
         forcedSvgSize: 384,
-        keepWithinCircle: false,
+        keepWithinCircle: false
       });
 
       const nodeProgramClasses = {
@@ -722,27 +722,27 @@ export class SigmaView extends DOMWidgetView {
         border: NodePointWithBorderProgram,
         picto: createNodeCompoundProgram([
           NodePointProgram,
-          NodePictogramProgram,
+          NodePictogramProgram
         ]),
         shape: NodeShapeProgram,
         'border+picto': createNodeCompoundProgram([
           NodePointWithBorderProgram,
-          NodePictogramProgram,
+          NodePictogramProgram
         ]),
         'border+halo': createNodeCompoundProgram([
           NodeHaloProgram,
-          NodePointWithBorderProgram,
+          NodePointWithBorderProgram
         ]),
         'border+halo+picto': createNodeCompoundProgram([
           NodeHaloProgram,
           NodePointWithBorderProgram,
-          NodePictogramProgram,
+          NodePictogramProgram
         ]),
         'halo+picto': createNodeCompoundProgram([
           NodeHaloProgram,
           NodePointProgram,
-          NodePictogramProgram,
-        ]),
+          NodePictogramProgram
+        ])
       };
 
       const nodeHoverProgramClasses = {
@@ -750,12 +750,12 @@ export class SigmaView extends DOMWidgetView {
         'border+halo': NodePointWithBorderProgram,
         'border+halo+picto': createNodeCompoundProgram([
           NodePointWithBorderProgram,
-          NodePictogramProgram,
+          NodePictogramProgram
         ]),
         'halo+picto': createNodeCompoundProgram([
           NodePointProgram,
-          NodePictogramProgram,
-        ]),
+          NodePictogramProgram
+        ])
       };
 
       let rendererSettings = this.model.get(
@@ -770,7 +770,7 @@ export class SigmaView extends DOMWidgetView {
         nodeHoverProgramClasses,
         defaultNodeType: 'point',
         defaultEdgeType: 'rectangle',
-        ...rendererSettings,
+        ...rendererSettings
       };
 
       // Gathering info about the graph to build reducers correctly
@@ -792,7 +792,7 @@ export class SigmaView extends DOMWidgetView {
       this.updateLegend(visualVariables, {
         nodeColor: scales.nodeColor?.summary,
         nodeBorderColor: scales.nodeBorderColor?.summary,
-        edgeColor: scales.edgeColor?.summary,
+        edgeColor: scales.edgeColor?.summary
       });
 
       const nodeDisplayDataRegister: Record<
@@ -824,7 +824,7 @@ export class SigmaView extends DOMWidgetView {
       rendererSettings.nodeReducer = (node, data) => {
         const displayData: Partial<IPysigmaNodeDisplayData> = {
           x: data.x,
-          y: data.y,
+          y: data.y
         };
 
         // Visual variables
@@ -953,7 +953,7 @@ export class SigmaView extends DOMWidgetView {
           displayData.color =
             nodeDisplayDataRegister[
               edgeColorFrom === 'source' ? source : target
-            ].color;
+              ].color;
         } else {
           displayData.color = scales.edgeColor(data) as string;
         }
@@ -1054,7 +1054,7 @@ export class SigmaView extends DOMWidgetView {
 
           SYNC_REGISTRY.set(this.syncKey, {
             emitter,
-            renderers: new Set([this.renderer]),
+            renderers: new Set([this.renderer])
           });
 
           this.bindSyncEvents(emitter);
@@ -1232,7 +1232,7 @@ export class SigmaView extends DOMWidgetView {
         summaries.edgeColor
       ),
       renderLegend('edge', 'Edge sizes', variables.edgeSize),
-      renderLegend('edge', 'Edge labels', variables.edgeLabel),
+      renderLegend('edge', 'Edge labels', variables.edgeLabel)
     ];
 
     this.legendElement.innerHTML = items.filter((l) => l).join('<hr>');
@@ -1362,9 +1362,9 @@ export class SigmaView extends DOMWidgetView {
     if (type === 'node') {
       this.selectedEdge = null;
       this.selectedNode = key;
-      const focusedNodes: Set<string> = new Set([this.selectedNode, ]);
-      let inboundNodesToProcess: Set<string> = new Set([this.selectedNode, ]);
-      let outboundNodesToProcess: Set<string> = new Set([this.selectedNode, ]);
+      const focusedNodes: Set<string> = new Set([this.selectedNode]);
+      let inboundNodesToProcess: Set<string> = new Set([this.selectedNode]);
+      let outboundNodesToProcess: Set<string> = new Set([this.selectedNode]);
 
       while (inboundNodesToProcess.size > 0) {
         let newNodesToProcess: Set<string> = new Set();
@@ -1372,7 +1372,7 @@ export class SigmaView extends DOMWidgetView {
           console.log(node);
           graph.forEachInNeighbor(node, (inboundNeighbor) => {
             focusedNodes.add(inboundNeighbor);
-            newNodesToProcess.add(inboundNeighbor)
+            newNodesToProcess.add(inboundNeighbor);
           });
         }
         inboundNodesToProcess = newNodesToProcess;
@@ -1384,7 +1384,7 @@ export class SigmaView extends DOMWidgetView {
           console.log(node);
           graph.forEachOutNeighbor(node, (outboundNeighbor) => {
             focusedNodes.add(outboundNeighbor);
-            newNodesToProcess.add(outboundNeighbor)
+            newNodesToProcess.add(outboundNeighbor);
           });
         }
         outboundNodesToProcess = newNodesToProcess;
@@ -1439,21 +1439,34 @@ export class SigmaView extends DOMWidgetView {
     for (let k in attr) {
       let target = info;
 
-      if (k == 'svg')
-      {
-          target.push(
-            ` <b>Image</b><img width="200px" height="200px" src="${escapeHtml(attr[k])}"/>`
-          )
-      } else if (k == 'scaffold_svg') {
+      if (k == 'Structure') {
+        const structureSVG = (async function() {
+          const response = await fetch('/render_molecule?smiles=' + encodeURIComponent(attr[k]));
+          const text = await response.text();
+          return text;
+        })();
+        const radarSVG = (async function() {
+          const response = await fetch('/render_radar_plot?smiles=' + encodeURIComponent(attr[k]) + "&pic50=" + encodeURIComponent(attr['pIC50']));
+          const text = await response.text();
+          return text;
+        })();
+
         target.push(
-            ` <b>Scaffold</b><img width="200px" height="200px" src="${escapeHtml(attr[k])}"/>`
-          )
-      } else if (k == 'mcs_svg') {
+          ` <b>Structure</b>attr[k]<img width="200px" height="200px" src="data:image/svg+xml;base64,${structureSVG}"/>`
+        );
         target.push(
-            ` <b>MCS</b><img width="200px" height="200px" src="${escapeHtml(attr[k])}"/>`
-          )
-      }
-      else {
+          ` <b>Radar</b><img width="200px" height="200px" src="data:image/svg+xml;base64,${radarSVG}"/>`
+        );
+      } else if (k == 'MCS') {
+        const mcsSVG = (async function() {
+          const response = await fetch('/render_molecule?smiles=' + encodeURIComponent(attr[k]));
+          const text = await response.text();
+          return text;
+        })();
+        target.push(
+          ` <b>MCS</b>attr[k]<img width="200px" height="200px" src="data:image/svg+xml;base64,${mcsSVG}"/>`
+        );
+      } else {
         if (vizAttributes.has(k)) target = vizInfo;
         else if (k.startsWith(IPYSIGMA_KWARG_PREFIX)) target = kwargInfo;
 
@@ -1678,7 +1691,7 @@ export class SigmaView extends DOMWidgetView {
 
     this.layout = new LayoutSupervisor(graph, {
       settings,
-      getEdgeWeight: this.edgeWeightAttribute,
+      getEdgeWeight: this.edgeWeightAttribute
     });
 
     this.noverlap = new NoverlapSupervisor(graph, {
@@ -1688,7 +1701,7 @@ export class SigmaView extends DOMWidgetView {
         return {
           x: pos.x,
           y: pos.y,
-          size: renderer.getNodeDisplayData(key)?.size,
+          size: renderer.getNodeDisplayData(key)?.size
         };
       },
       outputReducer(key, attr) {
@@ -1697,7 +1710,7 @@ export class SigmaView extends DOMWidgetView {
       onConverged() {
         stopNoverlap(true);
       },
-      settings: { ratio: 1, margin: 3 },
+      settings: { ratio: 1, margin: 3 }
     });
 
     hide(this.resetLayoutButton);
@@ -1805,7 +1818,7 @@ export class SigmaView extends DOMWidgetView {
       nodeAttributesUpdated: false,
       eachNodeAttributesUpdated: false,
       selectItem: false,
-      clearSelectedItem: false,
+      clearSelectedItem: false
     };
 
     const syncTargets = new Set(
@@ -1867,7 +1880,7 @@ export class SigmaView extends DOMWidgetView {
         syncEmitter.emit('nodePosition', {
           node: key,
           position: { x: attributes.x, y: attributes.y },
-          renderer: this.renderer,
+          renderer: this.renderer
         });
       });
 
@@ -1879,7 +1892,7 @@ export class SigmaView extends DOMWidgetView {
 
         syncEmitter.emit('layout', {
           layout: collectLayout(graph),
-          renderer: this.renderer,
+          renderer: this.renderer
         });
       });
 
